@@ -1,12 +1,186 @@
 <!DOCTYPE html>
 <html lang="zh-cn">
 <head>
+    <style>
+      @media (max-width: 700px) {
+        .author-signature {
+          margin-bottom: 32px !important;
+          margin-top: 10px !important;
+          font-size: 12px !important;
+        }
+      }
+      @media (max-width: 700px) {
+      #footerBeian .beian-inner {
+        flex-direction: column !important;
+        gap: 2px !important;
+        height: auto !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 4px 0 2px 0 !important;
+        font-size: 11px !important;
+      }
+      #footerBeian {
+        height: auto !important;
+        min-height: 28px;
+        padding-bottom: 0;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100vw;
+        z-index: 999;
+      }
+      body {
+        padding-bottom: 32px !important;
+      }
+      #footerBeian .beian-yellow, #footerBeian .beian-link {
+        font-size: 11px !important;
+      }
+      #footerBeian .beian-icon {
+        height: 12px !important;
+      }
+    }
+      @media (max-width: 700px) {
+      /* ...existing mobile styles... */
+      .custom-bar label {
+        display: block !important;
+        margin-right: 0 !important;
+        margin-bottom: 10px !important;
+      }
+      .custom-bar input,
+      .custom-bar select {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-top: 4px;
+        margin-bottom: 0;
+        box-sizing: border-box;
+      }
+      .custom-bar br {
+        display: none;
+      }
+      .custom-bar button {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+    }
+      @media (max-width: 700px) {
+      .top-flex-row {
+        flex-direction: column !important;
+        gap: 0;
+      }
+      .template-box {
+        max-width: 100vw;
+        min-width: 0;
+        margin-right: 0 !important;
+        margin-bottom: 12px;
+        background: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 12px 2vw 8px 2vw !important;
+      }
+      .intro-box {
+        min-width: 0;
+        font-size: 14px;
+        padding: 0;
+      }
+      .template-box > div[style*='display:flex'] {
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+      .template-box a {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 8px !important;
+        box-sizing: border-box;
+      }
+    }
+      @media (max-width: 700px) {
+      .top-flex-row {
+        flex-direction: column !important;
+        gap: 0;
+      }
+      .template-box {
+        max-width: 100vw;
+        min-width: 0;
+        margin-right: 0 !important;
+        margin-bottom: 12px;
+        background: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 12px 2vw 8px 2vw !important;
+      }
+      .intro-box {
+        min-width: 0;
+        font-size: 14px;
+        padding: 0;
+      }
+    }
+      .navbar {
+        width: 100%;
+        background: #2E65BD;
+        color: #fff;
+        padding: 0 0;
+        box-shadow: 0 2px 8px #e0e6f6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 54px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .navbar .nav-left {
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        margin-left: 32px;
+      }
+      .navbar .nav-links {
+        display: flex;
+        gap: 18px;
+        margin-right: 32px;
+      }
+      .navbar .nav-link {
+        color: #fff;
+        text-decoration: none;
+        font-size: 16px;
+        padding: 6px 16px;
+        border-radius: 18px;
+        transition: background 0.2s;
+      }
+      .navbar .nav-link:hover {
+        background: #2E65BD;
+      }
+    </style>
   <meta charset="UTF-8">
-  <title>制表通 - 通用表格生成器</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>表格裁条生成器</title>
+  <script src="./xlsx.full.min.js"></script>
   <style>
     body { font-family: '微软雅黑', Arial, sans-serif; background: #f7f8fa; margin: 0; }
     .container { max-width: 1100px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 32px; }
+    @media (max-width: 700px) {
+      .container { max-width: 100vw; margin: 0; border-radius: 0; box-shadow: none; padding: 8px 2vw 60px 2vw; }
+      .custom-bar { padding: 10px 4vw; font-size: 15px; }
+      .navbar { height: 44px; font-size: 16px; }
+      .navbar .nav-left { margin-left: 10px; font-size: 16px; }
+      .navbar .nav-links { margin-right: 10px; gap: 8px; }
+      .navbar .nav-link { font-size: 13px; padding: 4px 10px; }
+      h2 { font-size: 20px; }
+      .slip-title { font-size: 16px; letter-spacing: 2px; }
+      .slip-meta { font-size: 13px; }
+      .single-slip { max-width: 100vw; padding: 6px 2vw 2px 2vw; }
+      .slip-table { font-size: 11px; }
+      .slip-table th, .slip-table td { max-width: 60px; padding: 2px 2px; font-size: 11px; }
+      .upload-area { padding: 18px 2vw; font-size: 14px; }
+      .btn { padding: 6px 12px; font-size: 14px; }
+      #footerBeian .beian-inner { font-size: 12px; height: 36px; }
+      #footerBeian { height: 38px; }
+      #footerBeian .beian-yellow, #footerBeian .beian-link { font-size: 12px; }
+      #footerBeian .beian-icon { height: 14px; }
+      .search-box input { font-size: 13px; }
+      .custom-bar input, .custom-bar select { font-size: 14px; height: 30px; }
+    }
     .upload-area { border: 2px dashed #b3c6ff; border-radius: 8px; padding: 40px; text-align: center; color: #888; margin-bottom: 24px; background: #f4f7ff; cursor: pointer; }
     .upload-area.dragover { border-color: #409eff; background: #e6f7ff; }
     .table-wrap { overflow-x: auto; }
@@ -17,22 +191,58 @@
       .single-slip { box-shadow: none; border-radius: 0; page-break-after: always; }
       .cut-line { margin: 12px 0 0 0; }
     }
-    .single-slip { width: 100%; max-width: 900px; margin: 0 auto 32px auto; background: #fff; border-radius: 6px; box-shadow: 0 1px 4px #eee; padding: 24px 24px 8px 24px; position: relative; }
+    .single-slip {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto 10px auto;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px #eee;
+      padding: 10px 10px 4px 10px;
+      position: relative;
+    }
     .slip-title { text-align: center; font-size: 22px; font-weight: bold; letter-spacing: 8px; margin-bottom: 12px; }
     .slip-meta { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; color: #444; }
-    .slip-table { border-collapse: collapse; width: 100%; margin: 0; table-layout: auto; }
+    .slip-table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 0;
+      table-layout: fixed;
+      font-size: 12px;
+    }
     .slip-table th, .slip-table td {
       border: 1px solid #e0e0e0;
-      padding: 8px 12px;
+      padding: 3px 6px;
       text-align: center;
       word-break: break-all;
       white-space: pre-line;
       box-sizing: border-box;
+      line-height: 1.3;
+      max-width: 120px;
+      overflow-wrap: break-word;
     }
     .cut-line { border: none; border-top: 2px dashed #bbb; margin: 24px 0 0 0; height: 0; }
     .custom-bar { margin-bottom: 18px; background: #f7f7fb; padding: 16px 20px; border-radius: 6px; box-shadow: 0 1px 2px #eee; }
     .custom-bar label { margin-right: 10px; font-size: 15px; }
-    .custom-bar input { margin-right: 24px; padding: 4px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
+    .custom-bar input {
+      margin-right: 24px;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 18px;
+      font-size: 16px;
+      height: 36px;
+      box-sizing: border-box;
+      line-height: 1.2;
+    }
+    .custom-bar select {
+      height: 36px;
+      font-size: 16px;
+      padding: 6px 12px;
+      border-radius: 14px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      vertical-align: middle;
+    }
     @media print {
       .container, .custom-bar, .actions { display: none !important; }
       .single-slip { box-shadow: none; border-radius: 0; page-break-after: always; }
@@ -46,25 +256,77 @@
       white-space: pre-line;
       box-sizing: border-box;
     }
-    th input { width: 90%; border: 1px solid #d0d0d0; border-radius: 4px; padding: 2px 6px; }
+    th input { width: 90%; border: 1px solid #d0d0d0; border-radius: 18px; padding: 2px 6px; }
     .actions { margin-top: 20px; }
     .btn { background: #409eff; color: #fff; border: none; border-radius: 4px; padding: 8px 20px; cursor: pointer; margin-right: 10px; }
     .btn:active { background: #3076d1; }
     .search-box { float: right; margin-bottom: 10px; }
-    .search-box input { padding: 4px 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .search-box input { padding: 4px 10px; border: 1px solid #ccc; border-radius: 18px; }
   </style>
 </head>
 <body>
+      <div class="navbar">
+        <div class="nav-left">表格裁条生成器</div>
+        <div class="nav-links">
+          <a class="nav-link" href="https://www.937788.xyz/" target="_blank">忆痕·发布页</a>
+          <a class="nav-link" href="https://github.com/a937750307s" target="_blank">Github</a>
+        </div>
+      </div>
     <div class="container">
-      <h2>制表通 - 通用表格生成器</h2>
+      <h2>表格裁条生成器</h2>
+      <div class="top-flex-row" style="display:flex;align-items:stretch;margin-bottom:18px;">
+        <div class="template-box" style="flex:0 0 340px;background:rgba(120,120,120,0.13);border-radius:14px;padding:22px 18px 16px 18px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;box-shadow:0 2px 12px #bbb2;min-width:240px;max-width:380px;margin-right:32px;">
+          <div style="font-size:15px;color:#555;font-weight:bold;margin-bottom:10px;">模板文件快速体验：</div>
+          <div style="display:flex;gap:12px;margin-bottom:10px;">
+            <a href="./工资条模板.xlsx" download style="flex:1;text-align:center;background:rgba(60,60,60,0.10);border-radius:8px;padding:8px 0;cursor:pointer;color:#2a3a4a;text-decoration:none;font-size:15px;transition:background 0.2s;" onclick="event.preventDefault();uploadTemplateFile('./工资条模板.xlsx')">工资条模板</a>
+            <a href="./成绩单模板.xlsx" download style="flex:1;text-align:center;background:rgba(60,60,60,0.10);border-radius:8px;padding:8px 0;cursor:pointer;color:#2a3a4a;text-decoration:none;font-size:15px;transition:background 0.2s;" onclick="event.preventDefault();uploadTemplateFile('./成绩单模板.xlsx')">成绩单模板</a>
+            <a href="./签到条模板.xlsx" download style="flex:1;text-align:center;background:rgba(60,60,60,0.10);border-radius:8px;padding:8px 0;cursor:pointer;color:#2a3a4a;text-decoration:none;font-size:15px;transition:background 0.2s;" onclick="event.preventDefault();uploadTemplateFile('./签到条模板.xlsx')">签到条模板</a>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <a href="./礼品领取模板.xlsx" download style="flex:1;text-align:center;background:rgba(60,60,60,0.10);border-radius:8px;padding:8px 0;cursor:pointer;color:#2a3a4a;text-decoration:none;font-size:15px;transition:background 0.2s;" onclick="event.preventDefault();uploadTemplateFile('./礼品领取模板.xlsx')">礼品领取模板</a>
+            <a href="./回执模板.xlsx" download style="flex:1;text-align:center;background:rgba(60,60,60,0.10);border-radius:8px;padding:8px 0;cursor:pointer;color:#2a3a4a;text-decoration:none;font-size:15px;transition:background 0.2s;" onclick="event.preventDefault();uploadTemplateFile('./回执模板.xlsx')">回执模板</a>
+            <a href="./通知单模板.xlsx" download style="flex:1;text-align:center;background:rgba(60,60,60,0.10);border-radius:8px;padding:8px 0;cursor:pointer;color:#2a3a4a;text-decoration:none;font-size:15px;transition:background 0.2s;" onclick="event.preventDefault();uploadTemplateFile('./通知单模板.xlsx')">通知单模板</a>
+          </div>
+        </div>
+        <div class="intro-box" style="flex:1;min-width:0;display:flex;align-items:center;color:#666;font-size:15px;line-height:1.7;">
+          <div>
+            常用场景：工资条、成绩单、签到条、抽奖券、回执、通知单等。<br>
+            只需上传Excel或CSV表格，系统会自动识别并生成每条明细<br>
+            可导出PDF文件，或打印后裁成条，分发。
+          </div>
+        </div>
+      </div>
+        <script>
+          // 支持点击模板文件直接上传体验
+          function uploadTemplateFile(url) {
+            fetch(url)
+              .then(res => res.blob())
+              .then(blob => {
+                const fileName = decodeURIComponent(url.split('/').pop());
+                const file = new File([blob], fileName, { type: blob.type });
+                handleFile(file);
+              });
+          }
+        </script>
       <div class="custom-bar hide-print">
         <label>大标题：<input id="customTitle" value="工资条" /></label>
-        <label>公司名称：<input id="customCompany" value="某某科技有限公司" /></label>
-        <label>年月：<input id="customDate" value="2026年02月" /></label>
+        <label>单位名称：<input id="customCompany" value="某某科技有限公司" /></label>
+        <label>年月：<input id="customDate" /></label>
         <br/>
-        <label style="display:inline-block;margin-top:8px;">模板显示前几行：<input id="customHeaderRows" type="number" min="1" max="10" value="2" style="width:50px;" /></label>
+        <label style="display:inline-block;margin-top:8px;">模板显示前几行：<input id="customHeaderRows" type="number" min="1" max="10" value="2" style="width:100px;" /></label>
+        <label style="display:inline-block;margin-top:8px;">字体：
+          <select id="fontSelector" onchange="changeFont()" style="border-radius:14px;padding:2px 10px;">
+            <option value="SimHei">黑体</option>
+            <option value="SimSun" selected>宋体</option>
+            <option value="Microsoft YaHei">微软雅黑</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+          </select>
+        </label>
         <button class="btn" onclick="renderTable()">预览</button>
-        <button class="btn" onclick="window.print()">打印全部</button>
+        <button class="btn" onclick="exportPDF()">导出为PDF</button>
+        <script src="./html2canvas.min.js"></script>
+        <script src="./jspdf.umd.min.js"></script>
       </div>
       <div id="uploadArea" class="upload-area hide-print">
         <div>
@@ -72,223 +334,85 @@
           <div style="margin: 12px 0;">
             <button class="btn" onclick="document.getElementById('fileInput').click()">上传文件</button>
           </div>
-          <div>或将文件拖拽到此区域<br>（支持 xls、xlsx、csv）</div>
+          <div>或将文件拖拽到此区域<br>（支持 xls、xlsx、csv等格式文件）</div>
         </div>
         <input type="file" id="fileInput" accept=".xls,.xlsx,.csv" style="display:none" />
       </div>
       <div class="actions hide-print" style="display:none;" id="actionsBar">
         <span class="search-box">
-          <input type="text" id="searchInput" placeholder="搜索..." oninput="searchTable()" />
+          <input type="text" id="searchInput" placeholder="搜索前5列关键词..." oninput="searchTable()" />
         </span>
       </div>
-      <div class="hide-print" style="margin-bottom:10px;">
+      <div class="hide-print" style="margin-bottom:10px;display:none;" id="toggleTableBtnWrap">
         <button class="btn" id="toggleTableBtn" onclick="toggleTable()">展开原始表格</button>
       </div>
       <div class="table-wrap hide-print" id="tableWrap" style="display:none;"></div>
       <div id="slipWrap"></div>
     </div>
-  <script>
-    let tableData = [];
-    let tableHeader = [];
-    let filteredData = [];
-    let fileName = '';
-    let merges = [];
-
-    // 展开/收起原始表格
-          function toggleTable() {
-            const tableDiv = document.getElementById('tableWrap');
-            const btn = document.getElementById('toggleTableBtn');
-            if (tableDiv.style.display === 'none') {
-              tableDiv.style.display = '';
-              btn.textContent = '收起原始表格';
-            } else {
-              tableDiv.style.display = 'none';
-              btn.textContent = '展开原始表格';
-            }
-          }
-    // 上传/拖拽
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('fileInput');
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-    uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
-    uploadArea.addEventListener('drop', e => {
-      e.preventDefault();
-      uploadArea.classList.remove('dragover');
-      handleFile(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', e => {
-      handleFile(e.target.files[0]);
-      // 解决连续上传同一文件不触发change的问题
-      fileInput.value = '';
-    });
-
-    function handleFile(file) {
-      if (!file) return;
-      fileName = file.name;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        let data = e.target.result;
-        let workbook = XLSX.read(data, { type: 'binary' });
-        let sheet = workbook.Sheets[workbook.SheetNames[0]];
-        let json = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
-        if (json.length === 0) return;
-        window.lastJsonRaw = json; // 保存原始json用于多行表头
-        tableHeader = json[0];
-        // 自动忽略空白行
-        tableData = json.slice(1).filter(row => Array.isArray(row) && row.some(cell => cell !== undefined && String(cell).trim() !== ''));
-        filteredData = tableData;
-        merges = (sheet['!merges'] || []).map(m => ({
-          s: { r: m.s.r, c: m.s.c },
-          e: { r: m.e.r, c: m.e.c }
-        }));
-        renderTable();
-        document.getElementById('actionsBar').style.display = '';
-      };
-      reader.readAsBinaryString(file);
+  <script src="./main.js"></script>
+  <div class="author-signature" style="width:100vw;text-align:center;color:#888;font-size:13px;margin:18px 0 12px 0;letter-spacing:1px;">
+    作者：忆痕（yckj666@52PJ），</br>请给我的Github项目点个Star吧！
+  </div>
+  <div id="footerBeian">
+    <div class="beian-inner">
+      <span class="beian-yellow">本站内容仅供学习和交流，非商业用途</span>
+      <a class="beian-link" href="https://beian.miit.gov.cn/" target="_blank">浙ICP备2025187466号</a>
+      <a class="beian-link" href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33030402001483" target="_blank">
+        <img src="https://www.937788.xyz/gonganbeian.png" alt="公安备案" class="beian-icon"/>
+        浙公网安备33030402001483号
+      </a>
+    </div>
+  </div>
+  <style>
+    #footerBeian {
+      width: 100vw;
+      background: #222;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      z-index: 999;
+      padding: 0;
+      margin: 0;
+      box-shadow: 0 -2px 8px #1112;
     }
-
-    // 渲染表格
-    function renderTable() {
-      // 原始表格区
-      // 自动裁剪无内容的尾部空白列
-      let data = filteredData.length ? filteredData : tableData;
-      let rowCount = data.length;
-      let colCount = tableHeader.length;
-      // 计算实际有内容的最大列数
-      let lastCol = colCount - 1;
-      outer: for (; lastCol >= 0; lastCol--) {
-        if (tableHeader[lastCol] && String(tableHeader[lastCol]).trim() !== '') break;
-        for (let r = 0; r < rowCount; r++) {
-          if (data[r][lastCol] !== undefined && String(data[r][lastCol]).trim() !== '') break outer;
-        }
-      }
-      lastCol = Math.max(lastCol, 0);
-      colCount = lastCol + 1;
-      // 渲染表格
-      let html = '<table><thead><tr>';
-      for (let i = 0; i < colCount; i++) {
-        html += `<th>${tableHeader[i]}</th>`;
-      }
-      html += '</tr></thead><tbody>';
-      const skip = Array.from({ length: rowCount }, () => Array(colCount).fill(false));
-      const mergeMap = {};
-      merges.forEach(m => {
-        if (m.s.c > lastCol) return;
-        const key = `${m.s.r - 1},${m.s.c}`;
-        let colspan = Math.min(m.e.c, lastCol) - m.s.c + 1;
-        if (colspan < 1) return;
-        mergeMap[key] = { rowspan: m.e.r - m.s.r + 1, colspan };
-        for (let r = m.s.r - 1; r <= m.e.r - 1; r++) {
-          for (let c = m.s.c; c <= Math.min(m.e.c, lastCol); c++) {
-            if (!(r === m.s.r - 1 && c === m.s.c)) {
-              skip[r] && (skip[r][c] = true);
-            }
-          }
-        }
-      });
-      for (let r = 0; r < rowCount; r++) {
-        html += '<tr>';
-        for (let c = 0; c < colCount; c++) {
-          if (skip[r][c]) continue;
-          const key = `${r},${c}`;
-          let attrs = '';
-          if (mergeMap[key]) {
-            if (mergeMap[key].rowspan > 1) attrs += ` rowspan="${mergeMap[key].rowspan}"`;
-            if (mergeMap[key].colspan > 1) attrs += ` colspan="${mergeMap[key].colspan}"`;
-          }
-          const val = data[r][c] !== undefined ? data[r][c] : '';
-          html += `<td${attrs} title="${val}">${val}</td>`;
-        }
-        html += '</tr>';
-      }
-      html += '</tbody></table>';
-      document.getElementById('tableWrap').innerHTML = html;
-
-      // 工资条/成绩单 slip 区
-      const title = document.getElementById('customTitle').value;
-      const company = document.getElementById('customCompany').value;
-      const date = document.getElementById('customDate').value;
-      const headerRows = Math.max(1, parseInt(document.getElementById('customHeaderRows').value) || 1);
-      // slip区也自动裁剪无内容的尾部空白列
-      let slips = '';
-      // 取原始json前headerRows行作为表头区
-      let jsonHeaderRows = [];
-      if (window.lastJsonRaw && Array.isArray(window.lastJsonRaw)) {
-        jsonHeaderRows = window.lastJsonRaw.slice(0, headerRows);
-      } else {
-        // 兼容只上传一次的情况
-        jsonHeaderRows = [tableHeader];
-      }
-      for (let r = headerRows - 1; r < rowCount; r++) {
-        slips += `<div class="single-slip">`;
-        slips += `<div class="slip-title">${title}</div>`;
-        slips += `<div class="slip-meta"><span>${company}</span><span>月份：${date}</span></div>`;
-        slips += '<table class="slip-table">';
-        // 渲染前N行表头
-        for (let h = 0; h < jsonHeaderRows.length; h++) {
-          slips += '<thead><tr>';
-          for (let i = 0; i < colCount; i++) {
-            slips += `<th>${jsonHeaderRows[h][i] !== undefined ? jsonHeaderRows[h][i] : ''}</th>`;
-          }
-          slips += '</tr></thead>';
-        }
-        slips += '<tbody><tr>';
-        for (let c = 0; c < colCount; c++) {
-          // 只处理本行的合并
-          let attrs = '';
-          merges.forEach(m => {
-            if (m.s.r - 1 === r && m.s.c === c && c <= lastCol) {
-              const rowspan = m.e.r - m.s.r + 1;
-              const colspan = Math.min(m.e.c, lastCol) - m.s.c + 1;
-              if (rowspan > 1) attrs += ` rowspan="${rowspan}"`;
-              if (colspan > 1) attrs += ` colspan="${colspan}"`;
-            }
-          });
-          // 跳过被合并覆盖的单元格
-          let skipCell = false;
-          merges.forEach(m => {
-            if (!(m.s.r - 1 === r && m.s.c === c) && r >= m.s.r - 1 && r <= m.e.r - 1 && c >= m.s.c && c <= Math.min(m.e.c, lastCol)) {
-              skipCell = true;
-            }
-          });
-          if (skipCell) continue;
-          const val = data[r][c] !== undefined ? data[r][c] : '';
-          slips += `<td${attrs} title="${val}">${val}</td>`;
-        }
-        slips += '</tr></tbody></table>';
-        slips += '<hr class="cut-line" />';
-        slips += '</div>';
-      }
-      document.getElementById('slipWrap').innerHTML = slips;
-      // 预览后自动滚动到slip区
-      if (slips) {
-        setTimeout(() => {
-          document.getElementById('slipWrap').scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
+    #footerBeian .beian-inner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      height: 44px;
+      padding: 0;
     }
-
-    // 表头不再自定义，无需 editHeader
-
-    // 搜索
-    function searchTable() {
-      const val = document.getElementById('searchInput').value.trim();
-      if (!val) {
-        filteredData = tableData;
-      } else {
-        filteredData = tableData.filter(row => row.some(cell => (cell + '').includes(val)));
-      }
-      renderTable();
+    #footerBeian .beian-yellow {
+      color: #ffd600;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      margin: 0;
     }
-
-    // 导出
-    function exportTable() {
-      const ws = XLSX.utils.aoa_to_sheet([tableHeader, ...tableData]);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-      XLSX.writeFile(wb, fileName ? '制表通_' + fileName : '制表通导出.xlsx');
+    #footerBeian .beian-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      transition: color 0.2s;
+      margin: 0;
+      gap: 4px;
     }
-  </script>
+    #footerBeian .beian-link:hover { color: #ffd600; }
+    #footerBeian .beian-icon {
+      height: 18px;
+      width: auto;
+      margin-right: 2px;
+      display: inline-block;
+    }
+    body { padding-bottom: 48px !important; }
+    @media print {
+      #footerBeian { display: none !important; }
+    }
+  </style>
 </body>
 </html>
