@@ -1,6 +1,6 @@
 // main.js
 // 由 index.html 拆分出的全部 JS 逻辑
-   
+
 // 字体切换功能，默认黑体
 function changeFont() {
   const font = document.getElementById('fontSelector').value;
@@ -119,58 +119,67 @@ function handleFile(file) {
   }
 }
 
-// 渲染表格
-function renderTable() {
-  // 原始表格区：严格还原用户上传的表格内容
-  let data = window.lastJsonRaw ? window.lastJsonRaw.slice(1) : [];
-  let header = window.lastJsonRaw ? window.lastJsonRaw[0] : tableHeader;
-  // 取所有行（含表头）最大列数
-  let colCount = Math.max(
-    header && Array.isArray(header) ? header.length : 0,
-    ...data.map(row => Array.isArray(row) ? row.length : 0)
-  );
-  // 补齐表头
-  if (header.length < colCount) header = header.concat(Array(colCount - header.length).fill(''));
-  // 补齐每一行
-  data = data.map(row => {
-    if (!Array.isArray(row)) row = [];
-    if (row.length < colCount) return row.concat(Array(colCount - row.length).fill(''));
-    return row;
-  });
-  // 去除末尾连续的空白行
-  let lastNotEmpty = data.length - 1;
-  for (; lastNotEmpty >= 0; lastNotEmpty--) {
-    if (Array.isArray(data[lastNotEmpty]) && data[lastNotEmpty].some(cell => cell !== undefined && String(cell).trim() !== '')) break;
-  }
-  let rowCount = lastNotEmpty + 1;
-  // 渲染表格
-  let html = '<table><thead><tr>';
-  for (let i = 0; i < colCount; i++) {
-    html += `<th>${header[i] !== undefined ? header[i] : ''}</th>`;
-  }
-  html += '</tr></thead><tbody>';
-  // 合并单元格处理
+// 根据 merges 计算每个单元格的 skip 状态和起始单元格的 rowspan/colspan
+function buildMergeInfo(rowCount, colCount) {
   const skip = Array.from({ length: rowCount }, () => Array(colCount).fill(false));
   const mergeMap = {};
   merges.forEach(m => {
-    if (m.s.r - 1 < 0) return; // 跳过表头
-    if (m.s.r - 1 >= rowCount) return; // 跳过被裁剪掉的空白行
-    const key = `${m.s.r - 1},${m.s.c}`;
-    let rowspan = m.e.r - m.s.r + 1;
+    if (m.s.r >= rowCount || m.s.c >= colCount) return;
+    const key = `${m.s.r},${m.s.c}`;
+    let rowspan = Math.min(m.e.r, rowCount - 1) - m.s.r + 1;
     let colspan = m.e.c - m.s.c + 1;
     if (rowspan < 1 || colspan < 1) return;
-    // 如果合并区域超出有效行，自动缩减
-    let validRowspan = Math.min(rowspan, rowCount - (m.s.r - 1));
-    mergeMap[key] = { rowspan: validRowspan, colspan };
-    for (let r = m.s.r - 1; r <= Math.min(m.e.r - 1, rowCount - 1); r++) {
+    mergeMap[key] = { rowspan, colspan };
+    for (let r = m.s.r; r <= Math.min(m.e.r, rowCount - 1); r++) {
       for (let c = m.s.c; c <= m.e.c; c++) {
-        if (!(r === m.s.r - 1 && c === m.s.c)) {
-          skip[r] && (skip[r][c] = true);
+        if (!(r === m.s.r && c === m.s.c)) {
+          skip[r][c] = true;
         }
       }
     }
   });
-  for (let r = 0; r < rowCount; r++) {
+  return { skip, mergeMap };
+}
+
+// 渲染表格
+function renderTable() {
+  // 原始表格区：严格还原用户上传的表格内容
+  let raw = window.lastJsonRaw ? window.lastJsonRaw.slice() : [];
+  if (raw.length === 0) return;
+
+  // 计算最大列数
+  let colCount = Math.max(
+    ...raw.map(row => Array.isArray(row) ? row.length : 0)
+  );
+
+  // 补齐每一行
+  raw = raw.map(row => {
+    if (!Array.isArray(row)) row = [];
+    if (row.length < colCount) return row.concat(Array(colCount - row.length).fill(''));
+    return row;
+  });
+
+  // 去除末尾连续空白行
+  let lastNotEmpty = raw.length - 1;
+  for (; lastNotEmpty >= 0; lastNotEmpty--) {
+    if (raw[lastNotEmpty].some(cell => cell !== undefined && String(cell).trim() !== '')) break;
+  }
+  let rowCount = lastNotEmpty + 1;
+  raw = raw.slice(0, rowCount);
+
+  // 表头行数：至少为设置值，且覆盖所有合并单元格
+  const headerRowsInput = Math.max(1, parseInt(document.getElementById('customHeaderRows').value) || 1);
+  const mergeMaxRow = merges.length > 0
+    ? Math.max(...merges.map(m => Math.min(m.e.r, rowCount - 1)))
+    : 0;
+  const headerRows = Math.min(Math.max(headerRowsInput, mergeMaxRow + 1), rowCount);
+
+  // 构建完整表格的合并信息
+  const { skip, mergeMap } = buildMergeInfo(rowCount, colCount);
+
+  // 渲染原始表格
+  let html = '<table><thead>';
+  for (let r = 0; r < headerRows; r++) {
     html += '<tr>';
     for (let c = 0; c < colCount; c++) {
       if (skip[r][c]) continue;
@@ -180,7 +189,23 @@ function renderTable() {
         if (mergeMap[key].rowspan > 1) attrs += ` rowspan="${mergeMap[key].rowspan}"`;
         if (mergeMap[key].colspan > 1) attrs += ` colspan="${mergeMap[key].colspan}"`;
       }
-      const val = data[r][c] !== undefined ? data[r][c] : '';
+      const val = raw[r][c] !== undefined ? raw[r][c] : '';
+      html += `<th${attrs} title="${val}">${val}</th>`;
+    }
+    html += '</tr>';
+  }
+  html += '</thead><tbody>';
+  for (let r = headerRows; r < rowCount; r++) {
+    html += '<tr>';
+    for (let c = 0; c < colCount; c++) {
+      if (skip[r][c]) continue;
+      const key = `${r},${c}`;
+      let attrs = '';
+      if (mergeMap[key]) {
+        if (mergeMap[key].rowspan > 1) attrs += ` rowspan="${mergeMap[key].rowspan}"`;
+        if (mergeMap[key].colspan > 1) attrs += ` colspan="${mergeMap[key].colspan}"`;
+      }
+      const val = raw[r][c] !== undefined ? raw[r][c] : '';
       html += `<td${attrs} title="${val}">${val}</td>`;
     }
     html += '</tr>';
@@ -192,82 +217,50 @@ function renderTable() {
   const title = document.getElementById('customTitle').value;
   const company = document.getElementById('customCompany').value;
   const date = document.getElementById('customDate').value;
-  const headerRows = Math.max(1, parseInt(document.getElementById('customHeaderRows').value) || 1);
-  // slip区也自动裁剪无内容的尾部空白列
+
+  // 准备 slip 表头行
+  let jsonHeaderRows = raw.slice(0, headerRows);
+
   let slips = '';
-  // 取原始json前headerRows行作为表头区，并补齐
-  let jsonHeaderRows = [];
-  if (window.lastJsonRaw && Array.isArray(window.lastJsonRaw)) {
-    jsonHeaderRows = window.lastJsonRaw.slice(0, headerRows).map(row => {
-      if (!Array.isArray(row)) row = [];
-      if (row.length < colCount) return row.concat(Array(colCount - row.length).fill(''));
-      return row;
-    });
-  } else {
-    // 兼容只上传一次的情况
-    let th = tableHeader;
-    if (th.length < colCount) th = th.concat(Array(colCount - th.length).fill(''));
-    jsonHeaderRows = [th];
-  }
-  // slip区合并单元格处理
-  // 只处理数据区（不含表头），合并信息以merges为准
-  // slip区合并单元格处理（支持多行合并）
-  // 先构建每条slip的合并映射
-  for (let r = headerRows - 1; r < rowCount; r++) {
-    slips += `<div class=\"single-slip\">`;
-    slips += `<div class=\"slip-title\">${title}</div>`;
-    slips += `<div class=\"slip-meta\"><span>${company}</span><span>${date}</span></div>`;
-    slips += '<table class=\"slip-table\">';
-    // 渲染前N行表头
+  for (let r = headerRows; r < rowCount; r++) {
+    slips += `<div class="single-slip">`;
+    slips += `<div class="slip-title">${title}</div>`;
+    slips += `<div class="slip-meta"><span>${company}</span><span>${date}</span></div>`;
+    slips += '<table class="slip-table">';
+    // 渲染表头（支持合并单元格，多行表头统一放在一个 thead 中）
+    slips += '<thead>';
     for (let h = 0; h < jsonHeaderRows.length; h++) {
-      slips += '<thead><tr>';
-      for (let i = 0; i < colCount; i++) {
-        slips += `<th>${jsonHeaderRows[h][i] !== undefined ? jsonHeaderRows[h][i] : ''}</th>`;
+      slips += '<tr>';
+      for (let c = 0; c < colCount; c++) {
+        if (skip[h][c]) continue;
+        const key = `${h},${c}`;
+        let attrs = '';
+        if (mergeMap[key]) {
+          if (mergeMap[key].rowspan > 1) attrs += ` rowspan="${mergeMap[key].rowspan}"`;
+          if (mergeMap[key].colspan > 1) attrs += ` colspan="${mergeMap[key].colspan}"`;
+        }
+        const val = jsonHeaderRows[h][c] !== undefined ? jsonHeaderRows[h][c] : '';
+        slips += `<th${attrs}>${val}</th>`;
       }
-      slips += '</tr></thead>';
+      slips += '</tr>';
     }
-    slips += '<tbody>';
-    // 渲染本 slip 的当前数据行，合并信息与原表格区一致
-    // 构建 skip/mergeMap 一维数组（只一行）
-    const skip = Array(colCount).fill(false);
-    const mergeMap = {};
-    merges.forEach(m => {
-      // 如果本合并块起始行就是当前行
-      if (m.s.r - 1 === r) {
-        const key = `${r},${m.s.c}`;
-        let rowspan = m.e.r - m.s.r + 1;
-        let colspan = m.e.c - m.s.c + 1;
-        if (rowspan < 1 || colspan < 1) return;
-        mergeMap[m.s.c] = { rowspan, colspan };
-        for (let cc = m.s.c; cc <= m.e.c; cc++) {
-          if (cc !== m.s.c) skip[cc] = true;
-        }
-      }
-    });
-    // 还要处理被合并覆盖的单元格（行合并/列合并都要）
-    merges.forEach(m => {
-      if (!(m.s.r - 1 === r)) {
-        if (r >= m.s.r - 1 && r <= m.e.r - 1) {
-          for (let cc = m.s.c; cc <= m.e.c; cc++) {
-            skip[cc] = true;
-          }
-        }
-      }
-    });
-    slips += '<tr>';
+    slips += '</thead>';
+    // 渲染数据行
+    slips += '<tbody><tr>';
     for (let c = 0; c < colCount; c++) {
-      if (skip[c]) continue;
+      if (skip[r][c]) continue;
+      const key = `${r},${c}`;
       let attrs = '';
-      if (mergeMap[c]) {
-        if (mergeMap[c].rowspan > 1) attrs += ` rowspan=\"${mergeMap[c].rowspan}\"`;
-        if (mergeMap[c].colspan > 1) attrs += ` colspan=\"${mergeMap[c].colspan}\"`;
+      if (mergeMap[key]) {
+        if (mergeMap[key].rowspan > 1) attrs += ` rowspan="${mergeMap[key].rowspan}"`;
+        if (mergeMap[key].colspan > 1) attrs += ` colspan="${mergeMap[key].colspan}"`;
       }
-      const val = data[r][c] !== undefined ? data[r][c] : '';
-      slips += `<td${attrs} title=\"${val}\">${val}</td>`;
+      const val = raw[r][c] !== undefined ? raw[r][c] : '';
+      slips += `<td${attrs} title="${val}">${val}</td>`;
     }
-    slips += '</tr>';
-    slips += '</tbody></table>';
-    slips += '<hr class=\"cut-line\" />';
+    slips += '</tr></tbody>';
+    slips += '</table>';
+    slips += '<hr class="cut-line" />';
     slips += '</div>';
   }
   document.getElementById('slipWrap').innerHTML = slips;
@@ -387,19 +380,38 @@ function searchTable() {
     jsonHeaderRows = [tableHeader];
   }
   let colCount = tableHeader.length;
+  // 补齐表头行
+  jsonHeaderRows = jsonHeaderRows.map(row => {
+    if (!Array.isArray(row)) row = [];
+    if (row.length < colCount) return row.concat(Array(colCount - row.length).fill(''));
+    return row;
+  });
+  // 计算表头合并信息
+  const rawRowCount = window.lastJsonRaw ? window.lastJsonRaw.length : 1;
+  const { skip, mergeMap } = buildMergeInfo(Math.min(rawRowCount, headerRows), colCount);
   for (let idx = 0; idx < filteredData.length; idx++) {
     const row = filteredData[idx];
     slips += `<div class="single-slip">`;
     slips += `<div class="slip-title">${title}</div>`;
     slips += `<div class="slip-meta"><span>${company}</span><span>${date}</span></div>`;
     slips += '<table class="slip-table">';
+    slips += '<thead>';
     for (let h = 0; h < jsonHeaderRows.length; h++) {
-      slips += '<thead><tr>';
-      for (let i = 0; i < colCount; i++) {
-        slips += `<th>${jsonHeaderRows[h][i] !== undefined ? jsonHeaderRows[h][i] : ''}</th>`;
+      slips += '<tr>';
+      for (let c = 0; c < colCount; c++) {
+        if (skip[h] && skip[h][c]) continue;
+        const key = `${h},${c}`;
+        let attrs = '';
+        if (mergeMap[key]) {
+          if (mergeMap[key].rowspan > 1) attrs += ` rowspan="${mergeMap[key].rowspan}"`;
+          if (mergeMap[key].colspan > 1) attrs += ` colspan="${mergeMap[key].colspan}"`;
+        }
+        const val = jsonHeaderRows[h][c] !== undefined ? jsonHeaderRows[h][c] : '';
+        slips += `<th${attrs}>${val}</th>`;
       }
-      slips += '</tr></thead>';
+      slips += '</tr>';
     }
+    slips += '</thead>';
     slips += '<tbody><tr>';
     for (let c = 0; c < colCount; c++) {
       const val = row[c] !== undefined ? row[c] : '';
